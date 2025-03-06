@@ -8,10 +8,29 @@ dotenv.config({
     path : './env'
 })
 
-connectDB();
+connectDB()
+//once the database is connected it return the promises and we can handle it like. 
+.then(() => {
+    const port = process.env.PORT || 8000;
+    app.listen(port, () => {// while listen the app.listen take two argunemnts port and a call back function
+        console.log(`Server is running at port: ${port}`);
+    });
+
+    // here again there comes any chance of error so we can handle the error likewise.
+    app.on("error", (err) => {
+        console.error("Server error:", err);
+    });
+})
+.catch((err) => {
+    console.error("Failed to start server:", err);
+});
+
 
 
 /*
+
+//this is another way to connect database.
+
 const app = express();
 ;(async () => {
     try {
