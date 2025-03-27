@@ -45,11 +45,11 @@ const userSchema = new Schema(
     },{timestamps : true}
 )
 
-//suing pre hook to store hashed password before saving into the satabase
+//using pre hook to store hashed password before saving into the satabase
 // aviod arrow fnction because arrow function does not have context of "this" keyword
-userSchema.pre("save" , async function(next) { // next ko aise interpret kar lo like a flag , jo ki batata hai kaam ho gya ab isse aage paas kar do.
+userSchema.pre("save" , async function(next) { // next ko interpret kar lo like a flag , jo ki batata hai kaam ho gya ab isse aage paas kar do.
     if(!this.isModified("password")) return next();
-    this.password = bcrypt.hash(this.password, 10) // hash take parameter as kisko encrpt karna hai aur kitne  round ya salt. salt is like extra addition of charecter or somthing like that
+    this.password = bcrypt.hash(this.password, 10) // hash take parameter as kisko encrpt karna hai aur kitne  round ya salt. salt is like addition of charecter or somthing like that
     next(); // here next() means kaam pura h gya hai aage badh ja 
 } )
 
@@ -60,7 +60,7 @@ userSchema.methods.ispasswordCorrect = async function (password){
 }
 
 //method for generating Access token and refresh token 
-userSchema.methods.generateAccessToken = function(){
+userSchema.methods.generateAccessToken = function(){ // Access Token :- Short-lived, used to authenticate API requests.
     return jwt.sign(
         {
             _id: this._id,
@@ -74,7 +74,7 @@ userSchema.methods.generateAccessToken = function(){
         }
     )
 }
-userSchema.methods.generateRefreshToken = function(){
+userSchema.methods.generateRefreshToken = function(){  //RefreshToken :-  Long-lived, used to get a new access token when the old one expires, avoiding frequent logins.
     return jwt.sign(
         {
             _id: this._id,
