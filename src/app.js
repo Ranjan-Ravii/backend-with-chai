@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors"; // cors is a middleware that enables cross origin resource sharing. which allows requests from different origins.
-import cookieParser from "cookie-parse" // A middleware to parse cookies from incoming HTTP requests.
+import cookieParser from "cookie-parser"// A middleware to parse cookies from incoming HTTP requests.
 
 // Creating an Express app.
 const app = express();
@@ -25,5 +25,18 @@ app.use(express.static("public")) // this configration is for static files like 
 
 // configration for the cookie parsing 
 app.use(cookieParser());
+
+
+// *********************** user router ********************
+//route impot 
+ 
+import userRouter from "./routes/user.routes.js";
+
+//router declaration
+// app.use("/users", userRouter)  
+app.use("/api/v1/users", userRouter)  
+// this router route to the userRouter where its next task or
+//  functions are given. ans "/user" becomes prefit in the url
+// eg:- hhtp://localhost:8000/user/register
 
 export {app}

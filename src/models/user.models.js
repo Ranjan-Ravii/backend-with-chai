@@ -49,7 +49,7 @@ const userSchema = new Schema(
 // aviod arrow fnction because arrow function does not have context of "this" keyword
 userSchema.pre("save" , async function(next) { // next ko interpret kar lo like a flag , jo ki batata hai kaam ho gya ab isse aage paas kar do.
     if(!this.isModified("password")) return next();
-    this.password = bcrypt.hash(this.password, 10) // hash take parameter as kisko encrpt karna hai aur kitne  round ya salt. salt is like addition of charecter or somthing like that
+    this.password = await bcrypt.hash(this.password, 10) // hash take parameter as kisko encrpt karna hai aur kitne  round ya salt. salt is like addition of charecter or somthing like that
     next(); // here next() means kaam pura h gya hai aage badh ja 
 } )
 
