@@ -21,9 +21,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // step 1. get data from the frontend
     const { fullname, username, email, password } = req.body // in this way we can get data from json
-    console.log("fullname : ", fullname);// log to check if data is fatched.
+    // console.log("fullname : ", fullname);
 
-    //geting image files. you have to go through multer middleware .
+    //geting image files. you have to go through route -> multer middleware .
 
 
 
@@ -64,14 +64,20 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // *************** step 4 check for images, check for avatar *************
-
+    // console.log("Request files:", req.files);
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // console.log(avatarLocalPath)
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
     if (!avatarLocalPath) { //check avtar file is available 
         throw new ApiError(400, "Avatar file required.")
     }
 
+    let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
+    
     // const avatar = await uploadOnCloudinary(avatarLocalPath );
     // const coverImage = await uploadOnCloudinary(coverImageLocalPath );
 
@@ -81,6 +87,7 @@ const registerUser = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new ApiError(500, "Failed to upload avatar to Cloudinary.");
     }
+    // console.log("Cloudinary upload result:", avatar);
 
     let coverImage;
     if (coverImageLocalPath) {
@@ -97,7 +104,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     const user = await User.create({
         fullname,
-        avatar: avatar.url,
+        avatar: avatar?.url || "",
         coverImage: coverImage?.url || "",
         email,
         password,

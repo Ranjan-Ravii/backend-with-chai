@@ -1,6 +1,7 @@
 import mongooes, {Schema} from "mongoose"
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { type } from "os";
 
 const userSchema = new Schema(
     {
@@ -28,6 +29,9 @@ const userSchema = new Schema(
         avatar : {
             type : String, // this service is being taken from cloudinary
             required : true,
+        },
+        coverImage:{
+            type : String,
         },
         watchHistory : [
             {
