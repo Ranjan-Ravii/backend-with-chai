@@ -4,7 +4,28 @@ import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { apiResponse } from "../utils/apiResponse.js";
-/*
+
+const generateAccessAndRefershToken = async (userID) =>{
+    try {
+        const user = await User.findById(userID);
+
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+
+        user.refreshToken = refreshToken;
+
+        await user.save({validateBeforeSave : false}) // stop validating other credential before saving
+
+        return {accessToken, refreshToken}
+
+    } catch (error) {
+        throw new ApiError(501 , "Error while generating access token and refresh token.")
+    }
+}
+
+const registerUser = asyncHandler(async (req, res) => {
+
+    /*
     steps/logic for user registration
     1. get data from the frontend
     2. validate the data ,for exp. username is none empty, valid email formate etc.
@@ -15,9 +36,8 @@ import { apiResponse } from "../utils/apiResponse.js";
     7. remove the password and refresh tocken form reponse
     8. check if user is created successfully.
     9. return res.
-*/
+    */
 
-const registerUser = asyncHandler(async (req, res) => {
 
     // step 1. get data from the frontend
     const { fullname, username, email, password } = req.body // in this way we can get data from json
@@ -126,4 +146,117 @@ const registerUser = asyncHandler(async (req, res) => {
     )
 })
 
-export { registerUser }   
+// ******************************************** LECTURE 15 ***************************
+
+//****************** user login ************************
+
+const loginUser = asyncHandler( async (req, res) => {
+    /*
+        step 1. req body se user data le aao
+        step 2. username ya email se access chahiye
+        step 3. user ko find karo if yes
+            -> passoword check karo , else
+            -> error bhej do/ register karne ko bolo
+        step 4. sab thik rha to access tocken and refresh token generate karo aur user ko bhej do cookies me
+        step 5. response bhej do login ka 
+
+    */
+
+    // step 1. 
+    const {username, email, password} = req.body
+    console.log(username);
+    console.log(email);
+    
+    //step 2.
+    // if(!username || !email){
+    //     throw new ApiError(400, "Username or email is required.");
+    // }
+    if (!username && !email) {
+        throw new ApiError(400, "username or email is required")
+    }
+
+    //step 3. 
+    const user = await User.findOne({
+        $or : [ {email, username }]
+    }) 
+
+    if(!user){
+        throw new ApiError(404, "User does not exist.")
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Invalid user credentials")
+    }
+    
+    const {accessToken, refreshToken} = await generateAccessAndRefershToken(user._id);
+
+    // we have to make another call of db so that we can get updated data of user i.e refresh token
+
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+
+    const options = {
+        httpOnly : true,
+        secure : true
+    }
+
+    return res.status(200)
+    .cookie("accessToken",accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new apiResponse(
+            200,
+            {
+                user : loggedInUser, accessToken, refreshToken
+            },
+            "User loged in Successfully"
+        )
+    )
+
+})
+
+/* erros while debugging
+    1. missing await while finding the user. 
+    2. typo in srtting cookie() instead of cookies(). 
+    3. missing .js extension while importing.
+*/
+
+//*****************  logout user **********************
+const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset:{
+                refreshToken : 1, // this remove the field from document 
+            }
+        },
+        {
+            new : true 
+        }
+    )
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(
+        new apiResponse(200,{}, "User logged out successfully.")
+    )
+
+    /*
+        errors while debugging 
+        1. typo in clearCookie. previously clearcookie
+        2. extra argument in clearCookie(). previously clearCookie("refreshToken", refreshToken, options)
+
+    */
+})
+
+export { 
+    registerUser,
+    loginUser,
+    logoutUser
+ }   

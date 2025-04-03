@@ -43,7 +43,7 @@ const userSchema = new Schema(
             type : String,
             required : [true , 'password is required!']
         },
-        refreshTocken : { 
+        refreshToken : { 
             type : String
         },
     },{timestamps : true}
@@ -59,7 +59,7 @@ userSchema.pre("save" , async function(next) { // next ko interpret kar lo like 
 
 // till here we have done with the hashing part of password, now we need to check if the user entered the pasword is correct or note. 
 
-userSchema.methods.ispasswordCorrect = async function (password){
+userSchema.methods.isPasswordCorrect = async function (password){
     return await bcrypt.compare(password, this.password)
 }
 
