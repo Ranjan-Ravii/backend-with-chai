@@ -3,7 +3,7 @@ import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken"
 
-
+// to verif the loged in user credential. 
 export const verifyJWT = asyncHandler( (req, res, next) => {
     try {
         const token = req.cookies?.accessToken || req.header("Authentication")?.replace("bearer " , "");

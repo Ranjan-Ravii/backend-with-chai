@@ -4,6 +4,7 @@ import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { apiResponse } from "../utils/apiResponse.js";
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefershToken = async (userID) =>{
     try {
@@ -212,14 +213,13 @@ const loginUser = asyncHandler( async (req, res) => {
             "User loged in Successfully"
         )
     )
-
-})
-
-/* erros while debugging
+    /* erros while debugging
     1. missing await while finding the user. 
     2. typo in srtting cookie() instead of cookies(). 
     3. missing .js extension while importing.
-*/
+    */
+})
+
 
 //*****************  logout user **********************
 const logoutUser = asyncHandler(async (req, res) => {
@@ -255,8 +255,63 @@ const logoutUser = asyncHandler(async (req, res) => {
     */
 })
 
+//****************** refreshAccessToken endpoint (lec 16) **********************
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    // step 1. get the access token of the user from db
+    const incomimgRefreshToken = await req.cookies?.refreshToken || req.body.refreshToken
+
+    //step 2. check if incomimgRefreshToken true that means value is coming.
+    if(!incomimgRefreshToken){
+        throw new ApiError(401, "Invalid Refresh Token.");
+    }
+
+    //step 2. decode the incomingRefreshToken
+    try {
+        const decodedRefreshToken = jwt.verify(
+            incomimgRefreshToken,
+            process.env.REFRESH_TOKEN_SECRE
+        )
+    
+        const user = await User.findById(decodedRefreshToken._id);
+    
+        if(!user){
+            throw new ApiError(401, "invalid refresh token.")
+        }
+    
+        if (incomimgRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "Refresh token is expired or has been used.")
+        }
+    
+        const {accessToken, newRefreshToken} = generateAccessAndRefershToken(user._id);
+    
+        const options = {
+            httpOnly : true,
+            secure : true
+        }
+    
+        return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", newRefreshToken, options)
+        .json(
+            new apiResponse(
+                200,
+                {accessToken, refreshToken: newRefreshToken, },
+                "Access token refreshed."
+            )
+        )    
+    } catch (error) {
+        throw new ApiError(401, error?.message ||
+            "Invalid refresh token."
+        )
+    }                               
+
+})
+
 export { 
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    refreshAccessToken
  }   
