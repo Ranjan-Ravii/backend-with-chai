@@ -263,7 +263,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 const refreshAccessToken = asyncHandler(async (req, res) => {
     // step 1. get the access token of the user from db
     const incomingRefreshToken = await req.cookies?.refreshToken || req.body.refreshToken
-    console.log(incomingRefreshToken);
+    console.log("Received refreshToken from cookies:", req.cookies?.refreshToken);
+
     
 
     //step 2. check if incomingRefreshToken true that means value is coming.
@@ -292,7 +293,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
         const options = {
             httpOnly: true,
-            secure: true
+            secure: true, // false during local dev
+             
         }
 
         return res
