@@ -5,8 +5,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
-import { send } from "process";
-import { subscribe } from "diagnostics_channel";
+// import { send } from "process";
+// import { subscribe } from "diagnostics_channel";
 import mongoose from "mongoose";
 
 const generateAccessAndRefershToken = async (userID) => {
@@ -262,18 +262,20 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     // step 1. get the access token of the user from db
-    const incomimgRefreshToken = await req.cookies?.refreshToken || req.body.refreshToken
+    const incomingRefreshToken = await req.cookies?.refreshToken || req.body.refreshToken
+    console.log(incomingRefreshToken);
+    
 
-    //step 2. check if incomimgRefreshToken true that means value is coming.
-    if (!incomimgRefreshToken) {
+    //step 2. check if incomingRefreshToken true that means value is coming.
+    if (!incomingRefreshToken) {
         throw new ApiError(401, "Invalid Refresh Token.");
     }
 
-    //step 2. decode the incomingRefreshToken
+    //step 3. decode the incomingRefreshToken   
     try {
         const decodedRefreshToken = jwt.verify(
-            incomimgRefreshToken,
-            process.env.REFRESH_TOKEN_SECRE
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
         )
 
         const user = await User.findById(decodedRefreshToken._id);
@@ -282,7 +284,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "invalid refresh token.")
         }
 
-        if (incomimgRefreshToken !== user?.refreshToken) {
+        if (incomingRefreshToken !== user?.refreshToken) {
             throw new ApiError(401, "Refresh token is expired or has been used.")
         }
 
