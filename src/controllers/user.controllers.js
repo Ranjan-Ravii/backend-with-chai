@@ -90,7 +90,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // *************** step 4 check for images, check for avatar *************
     // console.log("Request files:", req.files);
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    // console.log(avatarLocalPath)
+    console.log(avatarLocalPath)
     // const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
     if (!avatarLocalPath) { //check avtar file is available 
@@ -355,6 +355,8 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 // ************************ update account details ************* 
 const updateAccountDetails = asyncHandler(async (req, res) => {
     const { email, fullname } = req.body
+    console.log(email, fullname);
+    
 
     if (!(email || fullname)) {
         throw new ApiError(400, "field is required.")
@@ -416,6 +418,8 @@ const updateAvatar = asyncHandler(async (req, res) => {
 const updateCoverImage = asyncHandler(async (req, res) => {
 
     const coverImageLocalPath = req.file?.path
+    console.log(req);
+    
 
     if (!coverImageLocalPath) {
         throw new ApiError(400, "cover image file is missing.")
@@ -488,7 +492,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                 },
                 isSubscribed: {
                     $cond: {
-                        if: { $in: [req.user?._id, " $subscribers.subscriber"] },
+                        if: { $in: [req.user?._id,  ["$subscribers.subscriber"]] },
                         then: true,
                         else: false
                     }
@@ -557,7 +561,7 @@ const getWatchHisory = asyncHandler(async (req, res) => {
                     },
                     {
                         $addFields: {
-                            owner: { $first: $owner }
+                            owner: { $first: ["$owner"] }
                         }
                     }
                 ]
