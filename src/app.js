@@ -31,6 +31,7 @@ app.use(cookieParser());
 //route impot 
  
 import userRouter from "./routes/user.routes.js";
+import videoRouter from "../src/routes/video.routers.js"
 
 //router declaration
 // app.use("/users", userRouter)  
@@ -38,5 +39,11 @@ app.use("/api/v1/users", userRouter)
 // this router route to the userRouter where its next task or
 //  functions are given. ans "/user" becomes prefit in the url
 // eg:- hhtp://localhost:8000/user/register
+
+
+//************ VIDEO ROUTING *********
+app.use("/api/v1/video", videoRouter )
+
+
 
 export {app}
