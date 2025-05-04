@@ -90,7 +90,7 @@ const getVideoById = asyncHandler(async (req, res) => {
         )
 })
 
-//TODO: update video details like title, description, thumbnail
+
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { title, description } = req.body
@@ -147,7 +147,6 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 })
 
-//TODO: delete video
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     if(!videoId){
