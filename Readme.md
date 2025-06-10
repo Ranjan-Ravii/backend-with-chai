@@ -8,8 +8,6 @@ This is a video series focused on backend development with JavaScript.
 
 - [Modeal link](https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj?origin=share)
 
-- [Video playlist](https://www.youtube.com/watch?v=EH3vGeqeIAo&list=PLu71SKxNbfoBGh_8p_NS-ZAh6v7HhYqHW)
-
 # Project Summary
 
 This project is a fully functional backend system built with modern technologies:
