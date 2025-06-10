@@ -1,5 +1,17 @@
 import { Router } from "express";
-import { getCurrentUser, getUserChannelProfile, getWatchHisory, loginUser, logoutUser, refreshAccessToken, registerUser, updateAccountDetails, updateAvatar, updateCoverImage, updatePasseword } from "../controllers/user.controllers.js";
+import {
+    getCurrentUser,
+    getUserChannelProfile,
+    getWatchHisory,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    registerUser,
+    updateAccountDetails,
+    updateAvatar,
+    updateCoverImage,
+    updatePasseword
+    } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 // import jwt from "jsonwebtoken";
@@ -9,15 +21,15 @@ const router = Router()
 router.route("/register").post(
     upload.fields([ // this upload is multer widdeware that simply aims injects image file while any user register
         {
-            name : "avatar", // in frontend this field should be avatar
-            maxCount : 1, 
+            name: "avatar", // in frontend this field should be avatar
+            maxCount: 1,
         },
         {
-            name : "coverImage",
-            maxCount : 1,
+            name: "coverImage",
+            maxCount: 1,
         }
     ])
-    ,registerUser)
+    , registerUser)
 
 router.route("/login").post(loginUser)
 

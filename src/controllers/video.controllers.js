@@ -1,10 +1,11 @@
-import mongoose, { model } from "mongoose";
-import {v2 as cloudinary} from "cloudinary"
+import mongoose, { isValidObjectId, model } from "mongoose";
+import { v2 as cloudinary } from "cloudinary"
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { Video } from "../models/video.models.js";
+import { User } from "../models/user.models.js";
 
 
 const uploadAVideo = asyncHandler(async (req, res) => {
@@ -45,7 +46,7 @@ const uploadAVideo = asyncHandler(async (req, res) => {
         description: description,
         duration: videoData.duration,
         views: 0,
-        cloudinaryPublicId : videoData.public_id,
+        cloudinaryPublicId: videoData.public_id,
         isPublished: false,
         owner: req.user?._id
     })
@@ -99,8 +100,9 @@ const updateVideo = asyncHandler(async (req, res) => {
     console.log(videoId);
     console.log("title : ", title, "description : ", description);
     console.log("Thumbnail local path", thumbnailLocalPath);
-
+    
     if (!videoId) {
+        
         throw new ApiError(400, "Invalid video id.")
     }
 
@@ -139,53 +141,53 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 
     return res
-    .status(200)
-    .json(
-        new apiResponse(200, { updatedVideo }, "Video details updated.")
-    )
+        .status(200)
+        .json(
+            new apiResponse(200, { updatedVideo }, "Video details updated.")
+        )
 
 
 })
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
-    if(!videoId){
+    if (!videoId) {
         throw new ApiError(400, "Video ID is required.");
     }
 
-    const  video = await Video.findByIdAndDelete(
+    const video = await Video.findByIdAndDelete(
         videoId
     )
 
-    if(!video){
+    if (!video) {
         throw new ApiError(400, "video not found.")
     }
 
-    if(video.cloudinaryPublicId){
+    if (video.cloudinaryPublicId) {
         await cloudinary.uploader.destroy(video.cloudinaryPublicId,
             {
-                resource_type : "video"
+                resource_type: "video"
             }
         )
     }
 
     res.status(200)
-    .json(
-        new apiResponse(200, {}, "video deleted successfully.")
-    )
+        .json(
+            new apiResponse(200, {}, "video deleted successfully.")
+        )
 })
 
 // toggle isPublished
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
 
-    if(!videoId){
+    if (!videoId) {
         throw new ApiError(400, "Invalid video id.")
     }
 
     const video = await Video.findById(videoId)
 
-    if(!video){
+    if (!video) {
         throw new ApiError(400, "Video not found.")
     }
 
@@ -194,16 +196,86 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     await video.save()
 
     return res
-    .status(200)
-    .json(
-    new apiResponse(200, {video},  "Publish status updated successfully.")
-    )
+        .status(200)
+        .json(
+            new apiResponse(200, { video }, "Publish status updated successfully.")
+        )
 })
+
+//get all videos of a user 
+const getUserVideos = asyncHandler(async (req, res) => {
+    const { username } = req.params;
+    console.log("username ", username);
+
+    if (!username) {
+        throw new ApiError(400, "Invalid Username.");
+    }
+
+    // Fetch user data by username
+    const user = await User.findOne({ username })
+        .select('_id username avatar')
+        .lean();
+
+    if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Fetch all videos by the user's _id (using find() to get all)
+    const videos = await Video.find({ owner: user._id })
+        .select('_id title description videoFile thumbnail duration views')
+        .lean();
+
+    // If no videos found, return an empty array
+    if (videos.length === 0) {
+        return res.status(404).json({ success: false, message: 'No videos found for this user' });
+    }
+
+    // Structure response
+    const result = {
+        _id: user._id,
+        username: user.username,
+        avatar: user.avatar,
+        userVideos: videos // This will be an array of video objects
+    };
+
+    return res
+        .status(200)
+        .json(
+            new apiResponse(200, result, "Videos fetched successfully.")
+        );
+});
+
+
+const getAllVideos = asyncHandler(async (req, res) => {
+  try {
+    const videos = await Video.find();
+
+    // Check if videos array is empty
+    if (!videos || videos.length === 0) {
+      return res.status(404).json({ message: 'No videos found' });
+    }
+
+    // Respond with the videos data
+    return res.status(200).json(
+      new apiResponse(200, videos, "All videos fetched successfully.")
+    );
+  } catch (error) {
+    // Error handling if database query fails
+    return res.status(500).json({
+      message: 'Internal Server Error',
+      error: error.message,
+    });
+  }
+});
+
+
 
 export {
     uploadAVideo,
     getVideoById,
     updateVideo,
     deleteVideo,
-    togglePublishStatus
+    togglePublishStatus,
+    getUserVideos,
+    getAllVideos
 } 

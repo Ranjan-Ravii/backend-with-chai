@@ -1,4 +1,4 @@
-import mongoose, {isValidObjectId} from "mongoose";
+import mongoose, { isValidObjectId, Types } from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/apiError.js"
 import { Playlist } from "../models/playlist.modls.js";
@@ -8,7 +8,7 @@ import {User } from "../models/user.models.js"
 
 const createPlaylist = asyncHandler(async (req, res) => {
     const {name, description} = req.body
-    const {userId} = req.user?._id
+    const userId = req.user?._id;
     const {videoId} = req.params
 
     if(!isValidObjectId(userId)){
@@ -25,8 +25,8 @@ const createPlaylist = asyncHandler(async (req, res) => {
     const newPlaylist = await Playlist.create({
         name : name,
         description : description,
-        video : req.params?._id,
-        owner : req.user?._id
+        video: [videoId],
+        owner : userId
     })
     
     return res
@@ -142,7 +142,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid playlist Id.")
     }
 
-    const playlist = await findOne(playlistId)
+    const playlist = await Playlist.findById(playlistId);
    
     return res 
     .status(200)
@@ -161,7 +161,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     const userPlaylist = await User.aggregate([
         {
             $match : {
-                _id : req.params?._id
+               _id: new Types.ObjectId(userId)
             }
         },
         {

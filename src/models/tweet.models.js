@@ -1,6 +1,6 @@
 import mongoose, { model, Schema } from "mongoose"
 import { type } from "os"
-import { User } from "./user.models"
+import { User } from "./user.models.js"
 
 const tweetSchema = new Schema(
     {
