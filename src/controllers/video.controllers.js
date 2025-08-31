@@ -222,8 +222,11 @@ const getUserVideos = asyncHandler(async (req, res) => {
 
     // Fetch all videos by the user's _id (using find() to get all)
     const videos = await Video.find({ owner: user._id })
-        .select('_id title description videoFile thumbnail duration views')
+        .select('_id title description videoFile thumbnail duration views updatedAt')
         .lean();
+        
+    console.log(videos);
+        
 
     // If no videos found, return an empty array
     if (videos.length === 0) {
@@ -248,7 +251,7 @@ const getUserVideos = asyncHandler(async (req, res) => {
 
 const getAllVideos = asyncHandler(async (req, res) => {
   try {
-    const videos = await Video.find();
+    const videos = await Video.find().populate('owner', 'avatar username' )
 
     // Check if videos array is empty
     if (!videos || videos.length === 0) {
@@ -257,7 +260,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     // Respond with the videos data
     return res.status(200).json(
-      new apiResponse(200, videos, "All videos fetched successfully.")
+      new apiResponse(200, videos, "All videos fetched successfully."),
+    //   console.log(videos)
     );
   } catch (error) {
     // Error handling if database query fails

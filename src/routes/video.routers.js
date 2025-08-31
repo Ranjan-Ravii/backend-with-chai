@@ -24,7 +24,7 @@ router.route("/c/:videoId").get(getVideoById);
 router.route("/updateVideo/c/:videoId").post(verifyJWT,upload.single("thumbnail"), updateVideo)
 router.route("/deletevideo/c/:videoId").post(verifyJWT, deleteVideo)
 router.route("/toggle-status/c/:videoId").post(verifyJWT, togglePublishStatus)
-router.route("/uservidess/c/:username").get(getUserVideos);
+router.route("/uservideos/c/:username").get(getUserVideos);
 router.route("/allvideos").get(getAllVideos)
 
 
