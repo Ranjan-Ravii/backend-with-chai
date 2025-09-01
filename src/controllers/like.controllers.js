@@ -243,7 +243,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         likedBy: user._id,
         video: { $ne: null }
     })
-    .populate("video", "title thumbnail videoFile duration views") // select fields from Video
+            .populate("video", "title thumbnail videoFile duration viewedBy") // select fields from Video
     .sort({ createdAt: -1 }); // recent likes first
 
     return res

@@ -45,7 +45,7 @@ const uploadAVideo = asyncHandler(async (req, res) => {
         title: title,
         description: description,
         duration: videoData.duration,
-        views: 0,
+        viewedBy: [],
         cloudinaryPublicId: videoData.public_id,
         isPublished: false,
         owner: req.user?._id
@@ -100,9 +100,9 @@ const updateVideo = asyncHandler(async (req, res) => {
     console.log(videoId);
     console.log("title : ", title, "description : ", description);
     console.log("Thumbnail local path", thumbnailLocalPath);
-    
+
     if (!videoId) {
-        
+
         throw new ApiError(400, "Invalid video id.")
     }
 
@@ -222,11 +222,11 @@ const getUserVideos = asyncHandler(async (req, res) => {
 
     // Fetch all videos by the user's _id (using find() to get all)
     const videos = await Video.find({ owner: user._id })
-        .select('_id title description videoFile thumbnail duration views updatedAt')
+        .select('_id title description videoFile thumbnail duration viewedBy updatedAt')
         .lean();
-        
+
     console.log(videos);
-        
+
 
     // If no videos found, return an empty array
     if (videos.length === 0) {
@@ -250,26 +250,72 @@ const getUserVideos = asyncHandler(async (req, res) => {
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  try {
-    const videos = await Video.find().populate('owner', 'avatar username' )
+    try {
+        const videos = await Video.find().populate('owner', 'avatar username')
 
-    // Check if videos array is empty
-    if (!videos || videos.length === 0) {
-      return res.status(404).json({ message: 'No videos found' });
+        // Check if videos array is empty
+        if (!videos || videos.length === 0) {
+            return res.status(404).json({ message: 'No videos found' });
+        }
+
+        // Respond with the videos data
+        return res.status(200).json(
+            new apiResponse(200, videos, "All videos fetched successfully."),
+            //   console.log(videos)
+        );
+    } catch (error) {
+        // Error handling if database query fails
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        });
+    }
+});
+
+const updateVideosViews = asyncHandler(async (req, res) => {
+    const { videoId } = req.body;
+    const userId = req.user?._id; 
+
+    console.log("videoId", videoId);
+    console.log("userId", userId);
+    
+
+    if (!userId) {
+        throw new ApiError(401, "User not authenticated");
     }
 
-    // Respond with the videos data
-    return res.status(200).json(
-      new apiResponse(200, videos, "All videos fetched successfully."),
-    //   console.log(videos)
-    );
-  } catch (error) {
-    // Error handling if database query fails
-    return res.status(500).json({
-      message: 'Internal Server Error',
-      error: error.message,
-    });
-  }
+    const updatedVideo = await Video.findByIdAndUpdate(
+        videoId,
+        { $addToSet: { viewedBy: userId } }, // $addToSet ensures uniqueness
+        { new: true }
+    ).select("viewedBy");
+
+    if (!updatedVideo) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    const viewsCount = updatedVideo.viewedBy.length;
+
+    return res
+        .status(200)
+        .json(new apiResponse(200, { viewsCount }, "View registered successfully"));
+});
+
+
+const getVideosViews = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+
+    const video = await Video.findById(videoId).select("viewedBy");
+
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    const viewsCount = video.viewedBy.length;
+
+    return res
+        .status(200)
+        .json(new apiResponse(200, { viewsCount }, "View count fetched successfully"));
 });
 
 
@@ -281,5 +327,7 @@ export {
     deleteVideo,
     togglePublishStatus,
     getUserVideos,
-    getAllVideos
+    getAllVideos,
+    updateVideosViews,
+    getVideosViews
 } 

@@ -538,7 +538,7 @@ const getWatchHisory = asyncHandler(async (req, res) => {
         },
         {
             $lookup: {
-                from: "videos", // which collection to merge (left outer)
+                from: "videos", // which collection to merge
                 localField: "watchHistory", // the field of current collection
                 foreignField: "_id",
                 as: "watchHistory",
@@ -582,6 +582,27 @@ const getWatchHisory = asyncHandler(async (req, res) => {
         )
 })
 
+// controllers/user.controller.js
+const addToWatchHistory = asyncHandler(async (req, res) => {
+    const { videoId } = req.body;  // frontend will send videoId
+    const userId = req.user._id;   // taken from JWT auth middleware
+
+    if (!mongoose.isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid video id.");
+    }
+
+    await User.findByIdAndUpdate(
+        userId,
+        { $addToSet: { watchHistory: videoId } }, // $addToSet prevents duplicates
+        { new: true }
+    );
+
+    return res
+        .status(200)
+        .json(new apiResponse(200, {}, "Video added to watch history."));
+});
+
+
 export {
     registerUser,
     loginUser,
@@ -593,5 +614,6 @@ export {
     updateAvatar,
     updateCoverImage,
     getUserChannelProfile,
+    addToWatchHistory,
     getWatchHisory
 }   

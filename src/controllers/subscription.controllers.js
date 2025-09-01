@@ -7,8 +7,8 @@ import { Subscription } from "../models/subscription.models.js"
 
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-  const { channelId } = req.params;
-  const subscriberId = req.user._id;
+  const { channelId } = req.body; // video's owner id
+  const subscriberId = req.user._id; // subscriber id
 
   if (!channelId) {
     throw new ApiError(400, "Channel ID is required.");
@@ -32,7 +32,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     // Unsubscribe (delete it)
     await existingSubscription.deleteOne();
     return res.status(200).json(
-      new apiResponse(200, {}, "Unsubscribed from the channel.")
+      new apiResponse(200, {subscribed: false}, "Unsubscribed from the channel.")
     );
   } else {
     // Subscribe (create it)
@@ -42,7 +42,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     });
 
     return res.status(200).json(
-      new apiResponse(200, {}, "Subscribed to the channel.")
+      new apiResponse(200, {subscribed: true}, "Subscribed to the channel.")
     );
   }
 });

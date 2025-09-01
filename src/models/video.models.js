@@ -24,10 +24,12 @@ const videoSchema = new Schema(
             type : Number,
             required : true,
         },
-        views : {
-            type : Number,
-            default : 0
-        },
+        viewedBy : [
+            {
+                type : Schema.Types.ObjectId,
+                ref : "User",
+            }
+        ],
         isPublished : {
             type : Boolean,
             default : true
