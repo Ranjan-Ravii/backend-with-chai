@@ -62,7 +62,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Channel Id or User Id is required.");
     }
 
-    const channelUser = await User.findOne(channelId);
+    const channelUser = await User.findOne({ _id: channelId });
     if (!channelUser) {
       throw new ApiError(404, `Channel with the channel id "${channelId}" not found.`);
     }
@@ -75,7 +75,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("subscriber", "username email fullname avatar -password");
+      .populate("subscriber", "username email fullname avatar");
 
     const subscribers = subscriptions.map((sub) => sub.subscriber);
 
@@ -144,10 +144,46 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
   }
 });
 
+const getSubscription = asyncHandler(async (req, res) => {
+  const { channelId } = req.query;  // video's owner id
+  const subscriberId = req.user._id; // subscriber id
+
+  if (!channelId) {
+    throw new ApiError(400, "Channel ID is required.");
+  }
+
+  if (!isValidObjectId(channelId)) {
+    throw new ApiError(400, "Invalid Channel ID.");
+  }
+
+  if (channelId.toString() === subscriberId.toString()) {
+    throw new ApiError(400, "You cannot subscribe to your own channel.");
+  }
+
+  // Check if subscription already exists
+  const existingSubscription = await Subscription.findOne({
+    channel: channelId,
+    subscriber: subscriberId
+  });
+
+  if (existingSubscription) {
+    return res.status(200).json(
+      new apiResponse(200, {subscribed: true}, "User is subscribed to this channel.")
+    );
+  } else {
+    return res.status(200).json(
+      new apiResponse(200, {subscribed: false}, "User is not subscribed to this channel.")
+    );
+  }
+});
+
+
+
 
 
 export {
   toggleSubscription,
+  getSubscription, // for either a user has subscribed or not 
   getUserChannelSubscribers,
   getSubscribedChannels
 }

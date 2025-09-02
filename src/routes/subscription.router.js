@@ -2,6 +2,7 @@ import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {
     getSubscribedChannels,
+    getSubscription,
     getUserChannelSubscribers,
     toggleSubscription
 }
@@ -12,8 +13,9 @@ const router = Router()
 
 
 router.route("/").post(verifyJWT, toggleSubscription)
+router.route("/").get(verifyJWT, getSubscription)
 router.route("/getUserSubscription/:channelId").get(verifyJWT, getUserChannelSubscribers)
-router.route("/getSubscribedChannel/:channelId").get(verifyJWT, getSubscribedChannels)
+router.route("/getSubscribedChannel/:subscriberId").get(verifyJWT, getSubscribedChannels)
 
 
 
