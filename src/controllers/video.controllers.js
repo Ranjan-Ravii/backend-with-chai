@@ -205,7 +205,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 //get all videos of a user 
 const getUserVideos = asyncHandler(async (req, res) => {
     const { username } = req.params;
-    console.log("username ", username);
+    // console.log("username ", username);
 
     if (!username) {
         throw new ApiError(400, "Invalid Username.");
@@ -222,10 +222,14 @@ const getUserVideos = asyncHandler(async (req, res) => {
 
     // Fetch all videos by the user's _id (using find() to get all)
     const videos = await Video.find({ owner: user._id })
-        .select('_id title description videoFile thumbnail duration viewedBy updatedAt')
+        .select('_id title description videoFile thumbnail duration viewedBy updatedAt owner')
+        .populate({
+            path: "owner", 
+            select : ("username avatar _id ")
+        })
         .lean();
 
-    console.log(videos);
+    
 
 
     // If no videos found, return an empty array

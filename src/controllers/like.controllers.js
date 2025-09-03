@@ -7,6 +7,7 @@ import { Video } from "../models/video.models.js"
 import { User } from "../models/user.models.js"
 import { Comment } from "../models/comment.models.js"
 import { Tweet } from "../models/tweet.models.js"
+import path from "path"
 
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
@@ -243,7 +244,14 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         likedBy: user._id,
         video: { $ne: null }
     })
-            .populate("video", "title thumbnail videoFile duration viewedBy") // select fields from Video
+    .populate({
+        path : "video", 
+        select : "title thumbnail videoFile duration viewedBy owner", 
+        populate: {
+            path : "owner", 
+            select : "username avatar"
+        }
+    })
     .sort({ createdAt: -1 }); // recent likes first
 
     return res
