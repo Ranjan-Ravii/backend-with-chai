@@ -32,7 +32,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     // Unsubscribe (delete it)
     await existingSubscription.deleteOne();
     return res.status(200).json(
-      new apiResponse(200, {subscribed: false}, "Unsubscribed from the channel.")
+      new apiResponse(200, { subscribed: false }, "Unsubscribed from the channel.")
     );
   } else {
     // Subscribe (create it)
@@ -42,7 +42,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     });
 
     return res.status(200).json(
-      new apiResponse(200, {subscribed: true}, "Subscribed to the channel.")
+      new apiResponse(200, { subscribed: true }, "Subscribed to the channel.")
     );
   }
 });
@@ -100,45 +100,93 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 const getSubscribedChannels = asyncHandler(async (req, res) => {
   try {
     const { subscriberId } = req.params;
+
     // pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 100;
     const skip = (page - 1) * limit;
 
-
-    if (!subscriberId) {
-      throw new ApiError(400, "Subscriber ID is required.");
+    if (!subscriberId || !isValidObjectId(subscriberId)) {
+      throw new ApiError(400, "Subscriber ID is required or Invalid Subscriber ID.");
     }
 
-    if (!isValidObjectId(subscriberId)) {
-      throw new ApiError(400, "Invalid Subscriber ID.");
-    }
-
-    //total subscriptions
-     const total = await Subscription.countDocuments({ subscriber: subscriberId });
-
-    // 1. Find all subscriptions by this user
-    const subscriptions = await Subscription.find({ subscriber: subscriberId })
-      .skip(skip)
-      .limit(limit)
-      .populate("channel", "username email fullname avatar -password");
-
-    // 2. Extract channel info
-    const channels = subscriptions.map((sub) => sub.channel);
-
-    return res.status(200).json(
-      new apiResponse(200, 
-        {
-          channels,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
+    const subscriptions = await Subscription.aggregate([
+      { 
+        $match : { subscriber : new mongoose.Types.ObjectId(subscriberId)}
+      },
+      {
+        $lookup : {
+          from : "users",
+          localField : "channel",
+          foreignField : "_id",
+          as : "channel", 
+          pipeline : [
+            {
+              $project : {
+              _id: 1,
+                username: 1,
+                fullname: 1,
+                coverImage: 1,
+                avatar: 1,
+              }
+            }  
+          ]
         }
-        , "Subscribed channels fetched successfully.")
+      }, 
+      { $unwind : "$channel"},
+
+      {
+        $lookup : {
+          from : "videos",
+          let : {channelId : "$channel._id"}, 
+          pipeline : [
+            { $match: { $expr: { $eq: ["$owner", "$$channelId"] } } },
+            {$count : "videoCount"}
+          ], 
+          as : "videos"
+        }
+      }, 
+      {
+        $addFields : {
+         videoCount: { $ifNull: [{ $arrayElemAt: ["$videos.videoCount", 0] }, 0] }
+        }
+      }, 
+      {
+        $lookup: {
+          from: "subscriptions",
+          let: { channelId: "$channel._id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$channel", "$$channelId"] } } },
+            { $count: "subscriberCount" }
+          ],
+          as: "subscribers"
+        }
+      }, 
+      {
+        $addFields: {
+          subscriberCount: { $ifNull: [{ $arrayElemAt: ["$subscribers.subscriberCount", 0] }, 0] }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          channel: 1,
+          videoCount: 1,
+          subscriberCount: 1
+        }
+      },
+
+      { $skip: skip },
+      { $limit: limit }
+    ])
+    
+
+    res.status(200).json(
+      new apiResponse(200, { subscriptions }, "Subscribed channels fetched successfully.")
     );
+    
   } catch (error) {
-    return res.status(500).json(
+    res.status(500).json(
       new apiResponse(500, {}, error.message || "Server Error")
     );
   }
@@ -168,11 +216,11 @@ const getSubscription = asyncHandler(async (req, res) => {
 
   if (existingSubscription) {
     return res.status(200).json(
-      new apiResponse(200, {subscribed: true}, "User is subscribed to this channel.")
+      new apiResponse(200, { subscribed: true }, "User is subscribed to this channel.")
     );
   } else {
     return res.status(200).json(
-      new apiResponse(200, {subscribed: false}, "User is not subscribed to this channel.")
+      new apiResponse(200, { subscribed: false }, "User is not subscribed to this channel.")
     );
   }
 });
