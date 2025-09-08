@@ -306,21 +306,21 @@ const updateVideosViews = asyncHandler(async (req, res) => {
 });
 
 
-const getVideosViews = asyncHandler(async (req, res) => {
-    const { videoId } = req.params;
+// const getVideosViews = asyncHandler(async (req, res) => {
+//     const { videoId } = req.params;
 
-    const video = await Video.findById(videoId).select("viewedBy");
+//     const video = await Video.findById(videoId).select("viewedBy");
 
-    if (!video) {
-        throw new ApiError(404, "Video not found");
-    }
+//     if (!video) {
+//         throw new ApiError(404, "Video not found");
+//     }
 
-    const viewsCount = video.viewedBy.length;
+//     const viewsCount = video.viewedBy.length;
 
-    return res
-        .status(200)
-        .json(new apiResponse(200, { viewsCount }, "View count fetched successfully"));
-});
+//     return res
+//         .status(200)
+//         .json(new apiResponse(200, { viewsCount }, "View count fetched successfully"));
+// });
 
 
 
@@ -333,5 +333,5 @@ export {
     getUserVideos,
     getAllVideos,
     updateVideosViews,
-    getVideosViews
+    // getVideosViews
 } 

@@ -8,7 +8,7 @@ import { deleteVideo,
     uploadAVideo,
     getAllVideos,
     updateVideosViews,
-    getVideosViews
+    // getVideosViews
  } 
 from "../controllers/video.controllers.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -30,6 +30,6 @@ router.route("/uservideos/c/:username").get(getUserVideos);
 router.route("/allvideos").get(getAllVideos)
 
 router.route('/views/add').post(verifyJWT, updateVideosViews); 
-router.route('/Views/:videoId').get(getVideosViews); 
+// router.route('/Views/:videoId').get(getVideosViews); 
 
 export default router
