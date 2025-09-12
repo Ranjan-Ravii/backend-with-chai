@@ -1,4 +1,4 @@
-# 🎬 Chai Aur Backend – Video Hosting Platform
+# 🎬 Video Sharing Platform
 
 This repository is built by following **Hitesh Choudhary Sir’s** YouTube series **Chai Aur Backend**. It is a fully functional backend of a video hosting platform, inspired by YouTube, with real-world features and best practices.
 
