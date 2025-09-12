@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -r dotenv/config  src/index.js",
-    "migrate": "node src/script/migrate.views.mjs"
+    "migrate": "node src/script/migrate.views.mjs",
+    "start": "node -r dotenv/config src/index.js"
   },
   "author": "",
   "license": "ISC",
