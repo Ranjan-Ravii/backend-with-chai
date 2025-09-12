@@ -6,10 +6,14 @@ import cookieParser from "cookie-parser"// A middleware to parse cookies from in
 const app = express();
 
 // enabling cors 
+// app.use(cors({
+//     origin : process.env.cors_origin,
+//     credentials: true,
+// }))
 app.use(cors({
-    origin : process.env.cors_origin,
-    credentials: true,
-}))
+  origin: 'http://localhost:5173', // your frontend URL
+  credentials: true,               // allow cookies or Authorization headers
+}));
 
 // Middleware for Parsing Request Data -> meaning that the data coming from browser or any api, it will be converted into specified formate.
 app.use(express.json({ // thir configration change the incoming data into the json file.
