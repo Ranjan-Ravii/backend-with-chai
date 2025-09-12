@@ -11,8 +11,8 @@ const app = express();
 //     credentials: true,
 // }))
 app.use(cors({
-  origin: 'http://localhost:5173', // your frontend URL
-  credentials: true,               // allow cookies or Authorization headers
+  origin: 'https://vibe-desi.vercel.app', // frontend URL
+  credentials: true, // if you send cookies/auth headers
 }));
 
 // Middleware for Parsing Request Data -> meaning that the data coming from browser or any api, it will be converted into specified formate.
