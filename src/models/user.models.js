@@ -1,6 +1,6 @@
 import mongooes, {Schema} from "mongoose"
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import { type } from "os";
 
 const userSchema = new Schema(
@@ -53,14 +53,14 @@ const userSchema = new Schema(
 // aviod arrow fnction because arrow function does not have context of "this" keyword
 userSchema.pre("save" , async function(next) { // next ko interpret kar lo like a flag , jo ki batata hai kaam ho gya ab isse aage paas kar do.
     if(!this.isModified("password")) return next();
-    this.password = await bcrypt.hash(this.password, 10) // hash take parameter as kisko encrpt karna hai aur kitne  round ya salt. salt is like addition of charecter or somthing like that
+    this.password = await bcryptjs.hash(this.password, 10) // hash take parameter as kisko encrpt karna hai aur kitne  round ya salt. salt is like addition of charecter or somthing like that
     next(); // here next() means kaam pura h gya hai aage badh ja 
 } )
 
 // till here we have done with the hashing part of password, now we need to check if the user entered the pasword is correct or note. 
 
 userSchema.methods.isPasswordCorrect = async function (password){
-    return await bcrypt.compare(password, this.password)
+    return await bcryptjs.compare(password, this.password)
 }
 
 //method for generating Access token and refresh token 
