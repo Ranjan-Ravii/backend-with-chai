@@ -10,9 +10,15 @@ const app = express();
 //     origin : process.env.cors_origin,
 //     credentials: true,
 // }))
+// app.use(cors({
+//   origin: 'https://vibe-desi.vercel.app', // frontend URL
+//   credentials: true, // if you send cookies/auth headers
+// }));
 app.use(cors({
-  origin: 'https://vibe-desi.vercel.app', // frontend URL
-  credentials: true, // if you send cookies/auth headers
+  origin: ["http://localhost:5173", "https://vibe-desi.vercel.app"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 // Middleware for Parsing Request Data -> meaning that the data coming from browser or any api, it will be converted into specified formate.
